@@ -258,4 +258,11 @@ const sInscrire = async (activiteId) => {
   background: #f8d7da;
   color: #721c24;
 }
+@media (max-width: 768px) {
+  .page-header h1 { font-size: 1.4rem; }
+  .filtres { gap: 0.4rem; }
+  .filtre-btn { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+  .activites-grid { grid-template-columns: 1fr; }
+  .activite-img { height: 160px; }
+}
 </style>

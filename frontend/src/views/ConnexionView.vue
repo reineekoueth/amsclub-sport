@@ -251,4 +251,13 @@ const seConnecter = async () => {
   font-weight: 600;
   text-decoration: none;
 }
+@media (max-width: 768px) 
+{
+  .auth-page { flex-direction: column; margin: 0; }
+  .left-panel { padding: 2rem 1.5rem; min-height: auto; }
+  .left-title { font-size: 1.8rem; }
+  .stats-row { flex-wrap: wrap; gap: 0.8rem; }
+  .stat-box { flex: 1; min-width: 80px; padding: 0.8rem; }
+  .right-panel { width: 100%; padding: 2rem 1.5rem; border-left: none; border-top: 1px solid #222; }
+}
 </style>

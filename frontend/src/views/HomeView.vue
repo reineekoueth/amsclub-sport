@@ -167,4 +167,49 @@ onMounted(async () => {
   font-size: 0.85rem;
   color: #666;
 }
+
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .hero-content p {
+    font-size: 0.9rem;
+  }
+
+  .hero-btns {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .hero-btns a {
+    text-align: center;
+    width: 100%;
+  }
+
+  .hero-stats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stat {
+    padding: 0.8rem 1rem;
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+}
 </style>

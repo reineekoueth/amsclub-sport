@@ -41,7 +41,6 @@
       <RouterLink v-if="estConnecte" to="/mes-cours" @click="menuOuvert = false">Mes Cours</RouterLink>
       <RouterLink v-if="estAdmin" to="/membres" @click="menuOuvert = false">Membres</RouterLink>
       <template v-if="estConnecte">
-        <RouterLink to="/profil" @click="menuOuvert = false">Mon Profil</RouterLink>
         <button @click="deconnexion">Déconnexion</button>
       </template>
       <template v-else>

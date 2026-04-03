@@ -73,4 +73,9 @@ body {
   padding: 1.5rem;
   box-shadow: var(--shadow);
 }
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
+}
 </style>

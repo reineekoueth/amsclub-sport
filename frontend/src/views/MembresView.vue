@@ -4,8 +4,6 @@
       <h1>Gestion des Membres</h1>
       <span class="badge-admin">Admin</span>
     </div>
-
-    <!-- Barre de recherche -->
     <div class="card">
       <input
         v-model="recherche"
@@ -29,20 +27,20 @@
         </thead>
         <tbody>
           <tr v-for="m in membresFiltres" :key="m.id">
-            <td>#{{ m.id }}</td>
-            <td><strong>{{ m.nom }} {{ m.prenom }}</strong></td>
-            <td>{{ m.email }}</td>
-            <td>
+            <td data-label="ID">#{{ m.id }}</td>
+            <td data-label="Nom"><strong>{{ m.nom }} {{ m.prenom }}</strong></td>
+            <td data-label="Email">{{ m.email }}</td>
+            <td data-label="Rôle">
               <span class="badge" :class="m.role === 'admin' ? 'badge-red' : 'badge-green'">
                 {{ m.role }}
               </span>
             </td>
-            <td>
+            <td data-label="Statut">
               <span class="badge" :class="m.actif ? 'badge-green' : 'badge-grey'">
                 {{ m.actif ? 'Actif' : 'Inactif' }}
               </span>
             </td>
-            <td>
+            <td data-label="Actions">
               <button class="btn-danger" @click="desactiverMembre(m.id)">
                 Désactiver
               </button>
@@ -225,5 +223,34 @@ const desactiverMembre = async (id) => {
 .message.erreur {
   background: #f8d7da;
   color: #721c24;
+}
+@media (max-width: 768px) {
+  .page-header { flex-wrap: wrap; gap: 0.5rem; }
+  .page-header h1 { font-size: 1.4rem; }
+
+  /* Transformer le tableau en cartes sur mobile */
+  .table thead { display: none; }
+  .table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    padding: 0.8rem;
+  }
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #f8f8f8;
+    font-size: 0.85rem;
+  }
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #888;
+    text-transform: uppercase;
+  }
 }
 </style>
