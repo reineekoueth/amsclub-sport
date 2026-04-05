@@ -59,7 +59,7 @@
 
         <div class="form-group">
           <label>Mot de passe * <small>(6 caractères minimum)</small></label>
-          <input v-model="form.mot_de_passe" type="password" minlength="10" required />
+          <input v-model="form.password" type="password" minlength="6" required />
         </div>
 
         <p v-if="erreur" class="erreur-msg">{{ erreur }}</p>
@@ -89,6 +89,7 @@ import { membresService, abonnementsService } from '../services/api'
 
 const router = useRouter()
 
+// === Formulaire avec password ===
 const form = ref({
   nom: '',
   prenom: '',
@@ -96,7 +97,7 @@ const form = ref({
   telephone: '',
   adresse: '',
   date_naissance: '',
-  mot_de_passe: '',
+  password: '',        // 🔹 Important : password et non mot_de_passe
   abonnement_id: null
 })
 
@@ -105,16 +106,17 @@ const erreur = ref('')
 const succes = ref('')
 const chargement = ref(false)
 
-// Charge les abonnements au chargement de la page
+// Charge les abonnements
 onMounted(async () => {
   try {
     const res = await abonnementsService.getTous()
     abonnements.value = res.data
   } catch (e) {
-    console.error(e)
+    console.error('Erreur chargement abonnements :', e)
   }
 })
 
+// Fonction d'inscription
 const sInscrire = async () => {
   erreur.value = ''
   succes.value = ''
@@ -124,7 +126,7 @@ const sInscrire = async () => {
     succes.value = 'Compte créé ! Redirection vers la connexion...'
     setTimeout(() => router.push('/connexion'), 2000)
   } catch (e) {
-    erreur.value = e.response?.data?.error || 'Erreur lors de la création'
+    erreur.value = e.response?.data?.error || 'Erreur lors de la création du compte'
   } finally {
     chargement.value = false
   }

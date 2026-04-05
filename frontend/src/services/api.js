@@ -1,8 +1,10 @@
 import axios from 'axios'
 
+// URL de ton backend Render
 const api = axios.create({
   baseURL: 'https://amsclub-sport.onrender.com/api',
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true
 })
 
 // Ajoute le token JWT automatiquement
@@ -24,10 +26,15 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
 // ===== MEMBRES =====
 export const membresService = {
+  // data doit contenir : { nom, prenom, email, telephone, adresse, date_naissance, password }
   inscription: (data) => api.post('/membres/inscription', data),
+
+  // data doit contenir : { email, password }
   connexion: (data) => api.post('/membres/connexion', data),
+
   getTous: () => api.get('/membres'),
   getParId: (id) => api.get(`/membres/${id}`),
   modifierProfil: (id, data) => api.put(`/membres/${id}`, data),

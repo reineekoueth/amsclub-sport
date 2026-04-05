@@ -1,58 +1,75 @@
-const db = require('../config/db');//importe la connexion à la base de données MySQL
-const bcrypt = require('bcrypt');// por chifrrer le mdp 
+const db = require('../config/db'); // connexion MySQL
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Inscription
+// ===== INSCRIPTION =====
 const inscription = async (req, res) => {
-  const { nom, prenom, email, telephone, adresse, date_naissance, mot_de_passe } = req.body;
-
-  if (!nom || !prenom || !email || !mot_de_passe) {
-    return res.status(400).json({ error: 'Champs obligatoires manquants' });
-  }
-
   try {
+    console.log("BODY INSCRIPTION:", req.body);
+
+    // Récupère les champs du frontend
+    const { nom, prenom, email, telephone, adresse, date_naissance, password } = req.body;
+
+    if (!nom || !prenom || !email || !password) {
+      return res.status(400).json({ error: 'Champs obligatoires manquants' });
+    }
+
+    // Vérifie si l'email existe déjà
     const [existe] = await db.query(
-      'SELECT id FROM membres WHERE email = ?', [email]
+      'SELECT id FROM membres WHERE email = ?',
+      [email]
     );
+
     if (existe.length > 0) {
       return res.status(409).json({ error: 'Email déjà utilisé' });
     }
 
-    const hash = await bcrypt.hash(mot_de_passe, 10);
+    // Hash du mot de passe
+    const hash = await bcrypt.hash(password, 10);
 
-     const [result] = await db.query(
-  'INSERT INTO membres (nom, prenom, email, telephone, adresse, date_naissance, mot_de_passe) VALUES (?, ?, ?, ?, ?, ?, ?)',
-  [nom, prenom, email, telephone || null, adresse || null, date_naissance, hash]
-);
+    // Insertion en DB
+    const [result] = await db.query(
+      'INSERT INTO membres (nom, prenom, email, telephone, adresse, date_naissance, mot_de_passe) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nom, prenom, email, telephone || null, adresse || null, date_naissance, hash]
+    );
 
     res.status(201).json({ message: 'Compte créé !', id: result.insertId });
   } catch (err) {
+    console.error("ERREUR INSCRIPTION:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Connexion
+// ===== CONNEXION =====
 const connexion = async (req, res) => {
-  const { email, mot_de_passe } = req.body;
-
-  if (!email || !mot_de_passe) {
-    return res.status(400).json({ error: 'Email et mot de passe requis' });
-  }
-
   try {
+    console.log("BODY CONNEXION:", req.body);
+
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email et mot de passe requis' });
+    }
+
+    // Cherche le membre actif
     const [rows] = await db.query(
-      'SELECT * FROM membres WHERE email = ? AND actif = 1', [email]
+      'SELECT * FROM membres WHERE email = ? AND actif = 1',
+      [email]
     );
+
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Identifiants incorrects' });
     }
 
     const membre = rows[0];
-    const valide = await bcrypt.compare(mot_de_passe, membre.mot_de_passe);
+
+    // Vérifie mot de passe
+    const valide = await bcrypt.compare(password, membre.mot_de_passe);
     if (!valide) {
       return res.status(401).json({ error: 'Identifiants incorrects' });
     }
 
+    // Génère JWT
     const token = jwt.sign(
       { id: membre.id, email: membre.email, role: membre.role },
       process.env.JWT_SECRET,
@@ -71,11 +88,12 @@ const connexion = async (req, res) => {
       }
     });
   } catch (err) {
+    console.error("ERREUR CONNEXION:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Liste tous les membres
+// ===== AUTRES MÉTHODES MEMBRES =====
 const getTousMembres = async (req, res) => {
   try {
     const [membres] = await db.query(
@@ -87,34 +105,19 @@ const getTousMembres = async (req, res) => {
   }
 };
 
-// Supprimer un membre
-const supprimerMembre = async (req, res) => {
-  try {
-    await db.query(
-      'UPDATE membres SET actif = 0 WHERE id = ?', [req.params.id]
-    );
-    res.json({ message: 'Membre désactivé' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-// Récupérer un membre par ID
 const getMembreParId = async (req, res) => {
   try {
     const [rows] = await db.query(
       'SELECT id, nom, prenom, email, telephone, adresse, date_naissance, role, date_inscription FROM membres WHERE id = ?',
       [req.params.id]
     );
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Membre non trouvé' });
-    }
+    if (rows.length === 0) return res.status(404).json({ error: 'Membre non trouvé' });
     res.json(rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Modifier son profil
 const modifierProfil = async (req, res) => {
   const { nom, prenom, telephone, adresse } = req.body;
   try {
@@ -127,5 +130,22 @@ const modifierProfil = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-module.exports = { inscription, connexion, getTousMembres, supprimerMembre,getMembreParId,
-  modifierProfil};
+
+const supprimerMembre = async (req, res) => {
+  try {
+    await db.query('UPDATE membres SET actif = 0 WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Membre désactivé' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ===== EXPORT =====
+module.exports = {
+  inscription,
+  connexion,
+  getTousMembres,
+  getMembreParId,
+  modifierProfil,
+  supprimerMembre
+};
