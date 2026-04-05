@@ -34,7 +34,7 @@
         <div class="form-group">
           <label>Mot de passe *</label>
           <input 
-            v-model="form.password"  <!-- ✅ correspond au backend -->
+            v-model="form.mot_de_passe"
             type="password" 
             placeholder="••••••••" 
             required 
@@ -63,8 +63,7 @@ import { membresService } from '../services/api'
 
 const router = useRouter()
 
-// ✅ Utiliser password pour correspondre au backend
-const form = ref({ email: '', password: '' })
+const form = ref({ email: '', mot_de_passe: '' })
 const erreur = ref('')
 const chargement = ref(false)
 
@@ -72,14 +71,9 @@ const seConnecter = async () => {
   erreur.value = ''
   chargement.value = true
   try {
-    // Envoie email + password
     const res = await membresService.connexion(form.value)
-
-    // Sauvegarde du token et des infos utilisateur
     localStorage.setItem('token', res.data.token)
     localStorage.setItem('utilisateur', JSON.stringify(res.data.utilisateur))
-
-    // Redirection vers l'accueil
     router.push('/')
   } catch (e) {
     erreur.value = e.response?.data?.error || 'Erreur de connexion'
