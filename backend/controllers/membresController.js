@@ -1,4 +1,4 @@
-const db = require('../config/db'); // connexion MySQL
+const db = require('../config/db'); // connexion MySQL 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -8,9 +8,9 @@ const inscription = async (req, res) => {
     console.log("BODY INSCRIPTION:", req.body);
 
     // Récupère les champs du frontend
-    const { nom, prenom, email, telephone, adresse, date_naissance, password } = req.body;
+    const { nom, prenom, email, telephone, adresse, date_naissance, mot_de_passe, role } = req.body;
 
-    if (!nom || !prenom || !email || !password) {
+    if (!nom || !prenom || !email || !mot_de_passe) {
       return res.status(400).json({ error: 'Champs obligatoires manquants' });
     }
 
@@ -25,12 +25,12 @@ const inscription = async (req, res) => {
     }
 
     // Hash du mot de passe
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(mot_de_passe, 10);
 
-    // Insertion en DB
+    // Insertion en DB (role par défaut "membre" si non fourni)
     const [result] = await db.query(
-      'INSERT INTO membres (nom, prenom, email, telephone, adresse, date_naissance, mot_de_passe) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [nom, prenom, email, telephone || null, adresse || null, date_naissance, hash]
+      'INSERT INTO membres (nom, prenom, email, telephone, adresse, date_naissance, mot_de_passe, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [nom, prenom, email, telephone || null, adresse || null, date_naissance || null, hash, role || 'membre']
     );
 
     res.status(201).json({ message: 'Compte créé !', id: result.insertId });
@@ -41,16 +41,14 @@ const inscription = async (req, res) => {
 };
 
 // ===== CONNEXION =====
-// ===== CONNEXION =====
 const connexion = async (req, res) => {
   try {
     console.log("BODY CONNEXION:", req.body);
 
-    // 🔥 correction ici
+    // 🔥 Correction : correspond au frontend (mot_de_passe)
     const { email, mot_de_passe } = req.body;
-    const password = mot_de_passe;
 
-    if (!email || !password) {
+    if (!email || !mot_de_passe) {
       return res.status(400).json({ error: 'Email et mot de passe requis' });
     }
 
@@ -67,7 +65,7 @@ const connexion = async (req, res) => {
     const membre = rows[0];
 
     // Vérifie mot de passe
-    const valide = await bcrypt.compare(password, membre.mot_de_passe);
+    const valide = await bcrypt.compare(mot_de_passe, membre.mot_de_passe);
     if (!valide) {
       return res.status(401).json({ error: 'Identifiants incorrects' });
     }
@@ -76,7 +74,7 @@ const connexion = async (req, res) => {
     const token = jwt.sign(
       { id: membre.id, email: membre.email, role: membre.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
     );
 
     res.json({
