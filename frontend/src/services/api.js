@@ -29,11 +29,17 @@ api.interceptors.response.use(
 
 // ===== MEMBRES =====
 export const membresService = {
-  // data doit contenir : { nom, prenom, email, telephone, adresse, date_naissance, password }
+  // Inscription : data doit contenir { nom, prenom, email, telephone, adresse, date_naissance, mot_de_passe, abonnement_id }
   inscription: (data) => api.post('/membres/inscription', data),
 
-  // data doit contenir : { email, password }
-  connexion: (data) => api.post('/membres/connexion', data),
+  // Connexion : data doit contenir { email, mot_de_passe }
+  connexion: (data) => {
+    const payload = {
+      email: data.email,
+      mot_de_passe: data.mot_de_passe || data.password
+    }
+    return api.post('/membres/connexion', payload)
+  },
 
   getTous: () => api.get('/membres'),
   getParId: (id) => api.get(`/membres/${id}`),
@@ -58,7 +64,7 @@ export const abonnementsService = {
 export const inscriptionsService = {
   getTous: () => api.get('/inscriptions'),
   getMembre: (id) => api.get(`/inscriptions/membre/${id}`),
-  creer: (data) => api.post('/inscriptions', data),
+  creer: (data) => api.post(`/inscriptions`, data),
   annuler: (id) => api.delete(`/inscriptions/${id}`)
 }
 
