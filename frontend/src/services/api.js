@@ -33,13 +33,12 @@ export const membresService = {
   inscription: (data) => api.post('/membres/inscription', data),
 
   // Connexion : data doit contenir { email, mot_de_passe }
-  connexion: (data) => {
-    const payload = {
-      email: data.email,
-      mot_de_passe: data.mot_de_passe || data.password
-    }
-    return api.post('/membres/connexion', payload)
-  },
+connexion: (data) => {
+  return api.post('/membres/connexion', {
+    email: data.email,
+    password: data.mot_de_passe
+  })
+},
 
   getTous: () => api.get('/membres'),
   getParId: (id) => api.get(`/membres/${id}`),
