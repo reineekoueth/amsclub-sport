@@ -3,7 +3,7 @@
     <div class="left-panel">
       <div class="left-tagline">Espace membre</div>
       <h1 class="left-title">Bienvenue sur<br>votre <span>AMS Club</span></h1>
-      <p class="left-desc"> Connectez-vous pour accéder à vos activités </p>
+      <p class="left-desc">Connectez-vous pour accéder à vos activités</p>
       <div class="stats-row">
         <div class="stat-box">
           <span class="stat-num">10</span>
@@ -22,7 +22,7 @@
 
       <form @submit.prevent="seConnecter">
         <div class="form-group">
-          <label>Email</label>
+          <label>Email *</label>
           <input 
             v-model="form.email" 
             type="email" 
@@ -32,9 +32,9 @@
         </div>
 
         <div class="form-group">
-          <label>Mot de passe</label>
+          <label>Mot de passe *</label>
           <input 
-            v-model="form.mot_de_passe" 
+            v-model="form.password"  <!-- ✅ correspond au backend -->
             type="password" 
             placeholder="••••••••" 
             required 
@@ -49,7 +49,7 @@
       </form>
 
       <p class="switch-link">
-        Pas encore membre ?
+        Pas encore membre ? 
         <RouterLink to="/inscription">Créer un compte</RouterLink>
       </p>
     </div>
@@ -63,8 +63,8 @@ import { membresService } from '../services/api'
 
 const router = useRouter()
 
-// Les données du formulaire
-const form = ref({ email: '', mot_de_passe: '' })
+// ✅ Utiliser password pour correspondre au backend
+const form = ref({ email: '', password: '' })
 const erreur = ref('')
 const chargement = ref(false)
 
@@ -72,14 +72,14 @@ const seConnecter = async () => {
   erreur.value = ''
   chargement.value = true
   try {
-    // On envoie email + mot de passe au backend
+    // Envoie email + password
     const res = await membresService.connexion(form.value)
 
-    // On sauvegarde le token et les infos dans localStorage
+    // Sauvegarde du token et des infos utilisateur
     localStorage.setItem('token', res.data.token)
     localStorage.setItem('utilisateur', JSON.stringify(res.data.utilisateur))
 
-    // On redirige vers l'accueil
+    // Redirection vers l'accueil
     router.push('/')
   } catch (e) {
     erreur.value = e.response?.data?.error || 'Erreur de connexion'
