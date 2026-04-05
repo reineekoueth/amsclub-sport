@@ -41,11 +41,14 @@ const inscription = async (req, res) => {
 };
 
 // ===== CONNEXION =====
+// ===== CONNEXION =====
 const connexion = async (req, res) => {
   try {
     console.log("BODY CONNEXION:", req.body);
 
-    const { email, password } = req.body;
+    // 🔥 correction ici
+    const { email, mot_de_passe } = req.body;
+    const password = mot_de_passe;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email et mot de passe requis' });
