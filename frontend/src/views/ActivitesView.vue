@@ -36,7 +36,7 @@
           </div>
 
           <div class="activite-footer">
-            <span class="prix">Voir abonnements</span>
+            <span class="prix">selon ton abonnements </span>
             <button 
               v-if="estConnecte"
               class="btn-inscrire"
