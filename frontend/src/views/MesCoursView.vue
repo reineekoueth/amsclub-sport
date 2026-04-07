@@ -74,7 +74,7 @@ const seDesinscrire = async (id) => {
   try {
     await inscriptionsService.annuler(id)
     const i = inscriptions.value.find(i => i.id === id)
-    if (i) i.statut = 'annulee'
+    if (i) i.statut = 'annulée'
     message.value = 'Désinscription effectuée.'
     isError.value = false
   } catch (e) {

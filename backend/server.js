@@ -12,18 +12,17 @@ const inscriptionsRoutes = require('./routes/inscriptions');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- Middleware CORS ---
+// --- CORS ---
 app.use(cors({
   origin: [
-    'http://localhost:5173',                  // frontend local
-    'https://amsclub-sport.vercel.app',      // frontend déployé
-    process.env.FRONTEND_URL                  // variable d'environnement si besoin
+    'http://localhost:5173',
+    'https://amsclub-sport.vercel.app',
+    process.env.FRONTEND_URL
   ],
   credentials: true
 }));
 
-// --- Middleware pour parser JSON et url-encoded ---
-// C’est la partie qui résout les erreurs 400 car req.body était undefined
+// --- Middleware ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -37,7 +36,11 @@ app.get('/', (req, res) => {
   res.json({ message: '🏋️ API AMS Club fonctionne !' });
 });
 
-// --- Démarrage serveur ---
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-});
+//  IMPORTANT POUR TESTS
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
