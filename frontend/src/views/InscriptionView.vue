@@ -97,7 +97,7 @@ const form = ref({
   telephone: '',
   adresse: '',
   date_naissance: '',
-  password: '',        // 🔹 Important : password et non mot_de_passe
+  password: '',        // Important : password et non mot_de_passe
   abonnement_id: null
 })
 

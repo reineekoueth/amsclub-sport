@@ -16,10 +16,12 @@
 
       <!-- Auth desktop -->
       <div class="navbar-auth">
+      
         <template v-if="estConnecte">
           <span class="user-name">👤 {{ utilisateur.prenom }}</span>
           <button class="btn btn-secondary" @click="deconnexion">Déconnexion</button>
         </template>
+
         <template v-else>
           <RouterLink to="/connexion" class="btn btn-secondary">Connexion</RouterLink>
           <RouterLink to="/inscription" class="btn btn-primary">S'inscrire</RouterLink>
@@ -40,9 +42,11 @@
       <RouterLink to="/activites" @click="menuOuvert = false">Activités</RouterLink>
       <RouterLink v-if="estConnecte" to="/mes-cours" @click="menuOuvert = false">Mes Cours</RouterLink>
       <RouterLink v-if="estAdmin" to="/membres" @click="menuOuvert = false">Membres</RouterLink>
+      
       <template v-if="estConnecte">
         <button @click="deconnexion">Déconnexion</button>
       </template>
+
       <template v-else>
         <RouterLink to="/connexion" @click="menuOuvert = false">Connexion</RouterLink>
         <RouterLink to="/inscription" @click="menuOuvert = false">S'inscrire</RouterLink>

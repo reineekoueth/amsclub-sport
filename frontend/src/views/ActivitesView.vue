@@ -3,6 +3,7 @@
     <div class="page-header">
       <h1>Nos Activités</h1>
     </div>
+
     <div class="filtres">
       <button
         v-for="j in ['Tous', 'Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']"
@@ -13,37 +14,54 @@
       >{{ j }}</button>
     </div>
 
-    <!-- Grille activités -->
     <div class="activites-grid">
-      <div 
-        v-for="a in activitesFiltrees" 
-        :key="a.id" 
+      <div
+        v-for="a in activitesFiltrees"
+        :key="a.id"
         class="activite-card"
       >
-        <!-- Image de l'activité -->
         <div class="activite-img">
           <img :src="a.image || '/images/default.jpg'" :alt="a.nom" />
-          <span class="jour-badge">{{ a.jour_semaine }}</span>
         </div>
 
         <div class="activite-body">
           <h3>{{ a.nom }}</h3>
           <p>{{ a.description }}</p>
 
-          <div class="activite-infos">
-            <span> {{ a.heure_debut }} – {{ a.heure_fin }}</span>
-            <span>👥 {{ a.inscrits }}/{{ a.capacite_max }}</span>
+          <!-- Créneaux horaires -->
+          <div class="creneaux">
+            <p class="creneaux-titre">Choisissez un créneau :</p>
+            <div class="creneaux-liste">
+              <button
+                v-for="c in a.creneaux"
+                :key="c.id"
+                class="creneau-btn"
+                :class="{
+                  active: creneauSelectionne[a.id]?.id === c.id,
+                  complet: c.inscrits >= c.capacite_max
+                }"
+                :disabled="c.inscrits >= c.capacite_max"
+                @click="selectionnerCreneau(a.id, c)"
+              >
+                <span class="creneau-jour">{{ c.jour_semaine }}</span>
+                <span class="creneau-heure">{{ c.heure_debut }} – {{ c.heure_fin }}</span>
+                <span class="creneau-duree">⏱ {{ dureeSeance(c.heure_debut, c.heure_fin) }}</span>
+                <span class="creneau-places">
+                  {{ c.inscrits >= c.capacite_max ? 'Complet' : `${c.capacite_max - c.inscrits} places` }}
+                </span>
+              </button>
+            </div>
           </div>
 
           <div class="activite-footer">
-            <span class="prix">selon ton abonnements </span>
-            <button 
+            <span class="prix">selon ton abonnement</span>
+            <button
               v-if="estConnecte"
               class="btn-inscrire"
-              :disabled="a.inscrits >= a.capacite_max"
+              :disabled="!creneauSelectionne[a.id]"
               @click="sInscrire(a.id)"
             >
-              {{ a.inscrits >= a.capacite_max ? 'Complet' : "S'inscrire" }}
+              {{ creneauSelectionne[a.id] ? "S'inscrire" : 'Choisir un créneau' }}
             </button>
             <RouterLink v-else to="/connexion" class="btn-inscrire">
               Se connecter
@@ -67,14 +85,27 @@ const activites = ref([])
 const filtreJour = ref('Tous')
 const message = ref('')
 const isError = ref(false)
+const creneauSelectionne = ref({})
 
 const estConnecte = ref(!!localStorage.getItem('token'))
 
 const activitesFiltrees = computed(() =>
   filtreJour.value === 'Tous'
     ? activites.value
-    : activites.value.filter(a => a.jour_semaine === filtreJour.value)
+    : activites.value.filter(a =>
+        a.creneaux?.some(c => c.jour_semaine === filtreJour.value)
+      )
 )
+
+const dureeSeance = (debut, fin) => {
+  const [hD, mD] = debut.split(':').map(Number)
+  const [hF, mF] = fin.split(':').map(Number)
+  const totalMin = (hF * 60 + mF) - (hD * 60 + mD)
+  if (totalMin <= 0 || totalMin > 120) return 'Durée invalide'
+  const h = Math.floor(totalMin / 60)
+  const m = totalMin % 60
+  return h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${m}min`
+}
 
 const chargerActivites = async () => {
   try {
@@ -85,28 +116,48 @@ const chargerActivites = async () => {
   }
 }
 
-onMounted(chargerActivites)
+const selectionnerCreneau = (activiteId, creneau) => {
+  creneauSelectionne.value = {
+    ...creneauSelectionne.value,
+    [activiteId]: creneau
+  }
+}
+
 const sInscrire = async (activiteId) => {
   const user = JSON.parse(localStorage.getItem('utilisateur') || '{}')
+  const creneau = creneauSelectionne.value[activiteId]
+
   if (!user.id) {
     message.value = 'Connectez-vous pour vous inscrire.'
     isError.value = true
     return
   }
+
+  if (!creneau) {
+    message.value = 'Veuillez choisir un créneau.'
+    isError.value = true
+    return
+  }
+
   try {
-    await inscriptionsService.creer({ 
-      membre_id: user.id, 
+    await inscriptionsService.creer({
+      membre_id: user.id,
       activite_id: activiteId,
+      creneau_id: creneau.id,
       abonnement_id: user.abonnement_id || 1
-    }) 
-    message.value = 'Inscription réussie !'
+    })
+
+    message.value = `Inscription réussie — ${creneau.jour_semaine} ${creneau.heure_debut} !`
     isError.value = false
+    creneauSelectionne.value[activiteId] = null
     await chargerActivites()
   } catch (e) {
     message.value = e.response?.data?.error || 'Erreur'
     isError.value = true
   }
 }
+
+onMounted(chargerActivites)
 </script>
 
 <style scoped>
@@ -175,19 +226,6 @@ const sInscrire = async (activiteId) => {
   object-fit: cover;
 }
 
-.jour-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: #e63946;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 .activite-body {
   padding: 1.2rem;
 }
@@ -206,12 +244,71 @@ const sInscrire = async (activiteId) => {
   margin-bottom: 0.8rem;
 }
 
-.activite-infos {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.82rem;
-  color: #555;
+/* Créneaux */
+.creneaux {
   margin-bottom: 1rem;
+}
+
+.creneaux-titre {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.creneaux-liste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.creneau-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+
+.creneau-btn:hover:not(:disabled) {
+  border-color: #e63946;
+  background: #fff5f5;
+}
+
+.creneau-btn.active {
+  border-color: #e63946;
+  background: #e63946;
+  color: white;
+}
+
+.creneau-btn.complet {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.creneau-jour {
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.creneau-heure {
+  font-size: 0.78rem;
+}
+
+.creneau-duree {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.creneau-places {
+  font-size: 0.7rem;
+  opacity: 0.75;
 }
 
 .activite-footer {
@@ -258,11 +355,14 @@ const sInscrire = async (activiteId) => {
   background: #f8d7da;
   color: #721c24;
 }
+
 @media (max-width: 768px) {
   .page-header h1 { font-size: 1.4rem; }
   .filtres { gap: 0.4rem; }
   .filtre-btn { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
   .activites-grid { grid-template-columns: 1fr; }
   .activite-img { height: 160px; }
+  .creneaux-liste { gap: 0.4rem; }
+  .creneau-btn { min-width: 90px; padding: 6px 8px; }
 }
 </style>
