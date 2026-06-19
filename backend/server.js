@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 //  IMPORTANT POUR TESTS
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+    console.log(`Serveur démarré sur http://localhost:${PORT}`);
   });
 }
 

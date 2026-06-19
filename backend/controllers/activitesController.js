@@ -3,7 +3,7 @@ const db = require('../config/db');
 // Liste toutes les activités actives
 const getToutesActivites = async (req, res) => {
   try {
-    const [activites] = await db.query(`
+    const [rows] = await db.query(`
       SELECT a.*, 
         (SELECT COUNT(*) FROM inscriptions i 
          WHERE i.activite_id = a.id 
@@ -14,7 +14,30 @@ const getToutesActivites = async (req, res) => {
         'Lundi','Mardi','Mercredi','Jeudi',
         'Vendredi','Samedi','Dimanche')
     `);
-    res.json(activites);
+
+    // Regrouper les lignes par nom d'activité
+    const map = {};
+    for (const row of rows) {
+      if (!map[row.nom]) {
+        map[row.nom] = {
+          id: row.id,
+          nom: row.nom,
+          description: row.description,
+          image: row.image,
+          creneaux: []
+        };
+      }
+      map[row.nom].creneaux.push({
+        id: row.id,
+        jour_semaine: row.jour_semaine,
+        heure_debut: row.heure_debut,
+        heure_fin: row.heure_fin,
+        inscrits: row.inscrits,
+        capacite_max: row.capacite_max
+      });
+    }
+
+    res.json(Object.values(map));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
