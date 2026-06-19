@@ -59,8 +59,8 @@
 
         <div class="form-group">
           <label>Mot de passe * <small>(6 caractères minimum)</small></label>
-          <input v-model="form.password" type="password" minlength="6" required />
-        </div>
+          <input v-model="form.mot_de_passe" type="password" minlength="6" required />
+       </div>
 
         <p v-if="erreur" class="erreur-msg">{{ erreur }}</p>
         <p v-if="succes" class="succes-msg">{{ succes }}</p>
@@ -97,7 +97,6 @@ const form = ref({
   telephone: '',
   adresse: '',
   date_naissance: '',
-  password: '',        // Important : password et non mot_de_passe
   abonnement_id: null
 })
 

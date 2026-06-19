@@ -156,8 +156,6 @@ const sInscrire = async (activiteId) => {
     isError.value = true
   }
 }
-
-onMounted(chargerActivites)
 </script>
 
 <style scoped>
