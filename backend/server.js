@@ -17,6 +17,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://amsclub-sport.vercel.app',
+    /^https:\/\/amsclub-sport-[a-z0-9]+-reine-ekoueths-projects\.vercel\.app$/,
     process.env.FRONTEND_URL
   ],
   credentials: true
