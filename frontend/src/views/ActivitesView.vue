@@ -115,7 +115,7 @@ const chargerActivites = async () => {
     console.error(e)
   }
 }
- 
+onMounted(chargerActivites)
 const selectionnerCreneau = (activiteId, creneau) => {
   creneauSelectionne.value = {
     ...creneauSelectionne.value,
